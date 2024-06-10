@@ -1,24 +1,26 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using CodeBase.Data;
 using CodeBase.Data.Static.Remote;
 using CodeBase.Services.RemoteData;
-using UnityEngine;
-using UnityEngine.Networking;
+using CodeBase.Services.RemoteData.Handlers;
 
 namespace CodeBase.Infrastructure.States
 {
-    public class RemoteDataLoadingState : IState
+    public class RemoteDataLoadingState : IState, IRemoteDataHandler
     {
         private readonly GameStateMachine _gameStateMachine;
-        private readonly IRemoteDataService _remoteDataService;
         private readonly LoadingCurtain _loadingCurtain;
         private readonly ConnectionFailed _connectionFailed;
+        private readonly IRemoteDataService _remoteDataService;
+        private readonly IRemoteResourceLoader _remoteResourceLoader;
 
-        public RemoteDataLoadingState(GameStateMachine gameStateMachine, IRemoteDataService remoteDataService,
-            LoadingCurtain loadingCurtain, ConnectionFailed connectionFailed)
+        public RemoteDataLoadingState(GameStateMachine gameStateMachine, LoadingCurtain loadingCurtain, ConnectionFailed connectionFailed,
+            IRemoteDataService remoteDataService, IRemoteResourceLoader remoteResourceLoader)
         {
             _gameStateMachine = gameStateMachine;
             _remoteDataService = remoteDataService;
+            _remoteResourceLoader = remoteResourceLoader;
             _loadingCurtain = loadingCurtain;
             _connectionFailed = connectionFailed;
         }
@@ -33,32 +35,34 @@ namespace CodeBase.Infrastructure.States
         {
         }
 
-        private async Task InitializeRemoteData()
+        public void OnLoadStateChanged(LoadingStatus status, string response)
         {
-            using UnityWebRequest webRequest = UnityWebRequest.Get(RemoteDataPath.RemoteDataURL);
-
-            UnityWebRequestAsyncOperation operation = webRequest.SendWebRequest();
-
-            while (!operation.isDone)
+            switch (status)
             {
-                await Task.Yield();
-            }
-
-            if (webRequest.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.ProtocolError)
-            {
-                Debug.LogError("Error: " + webRequest.error);
-                _connectionFailed.Show();
-            }
-            else
-            { 
-                string jsonResponse = webRequest.downloadHandler.text;
-                Debug.Log("Received: " + jsonResponse);
-                LevelsData levelsData = jsonResponse.ToDeserialized<LevelsData>();
-                _remoteDataService.Initialize(levelsData);
-                _remoteDataService.LevelsData.Log();
-                _gameStateMachine.Enter<LoadProgressState>();
-            }
+                case LoadingStatus.Failed:
+                    OnConnectionFailed();
+                    break;
+                case LoadingStatus.Successfully:
+                    OnConnectionSuccessfully(response);
+                    break;
+                case LoadingStatus.InLoading: break;
+                case LoadingStatus.Unknown:
+                default: throw new ArgumentOutOfRangeException(nameof(status), status, null);
+            }    
         }
-        
+
+        private async Task InitializeRemoteData() => 
+            await _remoteResourceLoader.LoadData(RemoteDataPath.RemoteDataURL, OnLoadStateChanged);
+
+        private void OnConnectionFailed() => 
+            _connectionFailed.Show();
+
+        private void OnConnectionSuccessfully(string response)
+        {
+            LevelsData levelsData = response.ToDeserialized<LevelsData>();
+            _remoteDataService.Initialize(levelsData);
+            _remoteDataService.LevelsData.Log();
+            _gameStateMachine.Enter<LoadProgressState>();
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using CodeBase.EventBus;
-using CodeBase.Infrastructure.AssetManagement;
+﻿using CodeBase.Infrastructure.AssetManagement;
 using CodeBase.Infrastructure.Factory;
 using CodeBase.Services;
 using CodeBase.Services.Progress;
@@ -43,14 +42,14 @@ namespace CodeBase.Infrastructure.States
         {
             RegisterGameStateMachine(_gameStateMachine);
             IRemoteDataService remoteDataService = RegisterRemoteDataService();
+            IRemoteResourceLoader remoteResourceLoader = RegisterRemoteResourceLoader();
             IAssetProvider assetProvider = RegisterAssetProvider();
             IProgressService progressService = RegisterProgressService();
             IStaticDataService staticData = RegisterStaticData();
-            IUIFactory uiFactory = RegisterUiFactory(staticData, assetProvider, _gameStateMachine);
+            IUIFactory uiFactory = RegisterUiFactory(staticData, assetProvider);
             IWindowService windowService = RegisterWindowService(uiFactory);
-            IGameFactory gameFactory = RegisterGameFactory(assetProvider, uiFactory, remoteDataService, progressService);
-            ISaveLoadService saveLoadService = RegisterSaveLoadService(progressService, gameFactory);
-            IEventBus eventBus = RegisterEventBus();
+            ISaveLoadService saveLoadService = RegisterSaveLoadService(progressService);
+            IGameFactory gameFactory = RegisterGameFactory(assetProvider, remoteDataService, progressService, saveLoadService, _gameStateMachine);
         }
 
         private void RegisterGameStateMachine(GameStateMachine gameStateMachine)
@@ -59,22 +58,28 @@ namespace CodeBase.Infrastructure.States
             _services.Single<IGameStateMachine>();
         }
 
+        private IRemoteDataService RegisterRemoteDataService()
+        {
+            _services.RegisterSingle<IRemoteDataService>(new RemoteDataService());
+            return _services.Single<IRemoteDataService>();
+        }
+        
+        private IRemoteResourceLoader RegisterRemoteResourceLoader()
+        {
+            _services.RegisterSingle<IRemoteResourceLoader>(new RemoteResourceLoader());
+            return _services.Single<IRemoteResourceLoader>();
+        }
+
         private IProgressService RegisterProgressService()
         {
             _services.RegisterSingle<IProgressService>(new ProgressService());
             return _services.Single<IProgressService>();
         }
 
-        private ISaveLoadService RegisterSaveLoadService(IProgressService progressService, IGameFactory gameFactory)
+        private ISaveLoadService RegisterSaveLoadService(IProgressService progressService)
         {
-            _services.RegisterSingle<ISaveLoadService>(new SaveLoadService(progressService, gameFactory));
+            _services.RegisterSingle<ISaveLoadService>(new SaveLoadService(progressService));
             return _services.Single<ISaveLoadService>();
-        }
-
-        private IRemoteDataService RegisterRemoteDataService()
-        {
-            _services.RegisterSingle<IRemoteDataService>(new RemoteDataService());
-            return _services.Single<IRemoteDataService>();
         }
 
         private IAssetProvider RegisterAssetProvider()
@@ -83,17 +88,11 @@ namespace CodeBase.Infrastructure.States
             return _services.Single<IAssetProvider>();
         }
 
-        private IGameFactory RegisterGameFactory(IAssetProvider assetProvider, IUIFactory uiFactory,
-            IRemoteDataService remoteDataService, IProgressService progressService)
+        private IGameFactory RegisterGameFactory(IAssetProvider assetProvider, IRemoteDataService remoteDataService,
+            IProgressService progressService, ISaveLoadService saveLoadService, IGameStateMachine gameStateMachine)
         {
-            _services.RegisterSingle<IGameFactory>(new GameFactory(assetProvider, uiFactory, remoteDataService, progressService));
+            _services.RegisterSingle<IGameFactory>(new GameFactory(assetProvider, remoteDataService, progressService, saveLoadService, gameStateMachine));
             return _services.Single<IGameFactory>();
-        }
-
-        private IEventBus RegisterEventBus()
-        {
-            _services.RegisterSingle<IEventBus>(new EventBus.EventBus());
-            return _services.Single<IEventBus>();
         }
 
         private IStaticDataService RegisterStaticData()
@@ -104,9 +103,9 @@ namespace CodeBase.Infrastructure.States
             return _services.Single<IStaticDataService>();
         }
 
-        private IUIFactory RegisterUiFactory(IStaticDataService staticData, IAssetProvider assetProvider, IGameStateMachine gameStateMachine)
+        private IUIFactory RegisterUiFactory(IStaticDataService staticData, IAssetProvider assetProvider)
         {
-            _services.RegisterSingle<IUIFactory>(new UIFactory(staticData, assetProvider, gameStateMachine));
+            _services.RegisterSingle<IUIFactory>(new UIFactory(staticData, assetProvider));
             return _services.Single<IUIFactory>();
         }
 

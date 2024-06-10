@@ -21,7 +21,7 @@ namespace CodeBase.Data.Static.Remote
             Debug.Log("---------------------------");
         }
         
-        public LevelConfig FindLevelConfigById(int levelId) => 
+        public LevelConfig GetById(int levelId) => 
             LevelConfigs.FirstOrDefault(levelConfig => levelConfig.ID == levelId);
     }
 }

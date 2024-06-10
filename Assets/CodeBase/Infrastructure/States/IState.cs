@@ -1,10 +1,17 @@
-﻿using System.Threading.Tasks;
-
-namespace CodeBase.Infrastructure.States
+﻿namespace CodeBase.Infrastructure.States
 {
-    public interface IState
+    public interface IState: IExitableState
     {
-        public void Enter();
-        public void Exit();
+        void Enter();
+    }
+
+    public interface IPayloadedState<TPayload> : IExitableState
+    {
+        void Enter(TPayload levelPayload);
+    }
+  
+    public interface IExitableState
+    {
+        void Exit();
     }
 }

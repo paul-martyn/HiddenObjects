@@ -14,10 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ScreensData:
   - WindowID: 1
-    Prefab: {fileID: 595605199832881098, guid: 01f4354b33bdd0c47b6a54183e020949, type: 3}
+    Prefab: {fileID: 4715877028015224745, guid: 01f4354b33bdd0c47b6a54183e020949, type: 3}
   - WindowID: 2
-    Prefab: {fileID: 295781958957673429, guid: d35ce40e116389848a1d5b0594b36726, type: 3}
-  - WindowID: 3
-    Prefab: {fileID: 4136983104344838269, guid: e718312af33c5eb458940230296fe3f1, type: 3}
-  - WindowID: 4
-    Prefab: {fileID: 5697530617314940124, guid: 5a3c81b3981298342b1caaa5d4475105, type: 3}
+    Prefab: {fileID: -5562484028294236650, guid: 56a61ad217485944f80277bac2be2825, type: 3}

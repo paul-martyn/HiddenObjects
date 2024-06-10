@@ -24,14 +24,7 @@ namespace CodeBase.Data.Progress
             }
         }
         
-        public LevelProgress FindLevelProgressById(int levelId) => 
+        public LevelProgress GetById(int levelId) => 
             LevelProgresses.FirstOrDefault(progress => progress.LevelID == levelId);
-    }
-    
-    [Serializable]
-    public class LevelProgress
-    {
-        public int LevelID;
-        public int CurrentProgress;
     }
 }

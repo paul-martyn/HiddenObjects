@@ -4,8 +4,6 @@
     {
         Unknown = 0,
         MainMenu = 1,
-        Level = 2,
-        Complete = 3,
-        Trouble = 4,
+        Loading = 2,
     }
 }

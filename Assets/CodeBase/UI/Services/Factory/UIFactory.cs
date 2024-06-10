@@ -1,6 +1,5 @@
 ﻿using CodeBase.Data.Static;
 using CodeBase.Infrastructure.AssetManagement;
-using CodeBase.Infrastructure.States;
 using CodeBase.Services.StaticData;
 using CodeBase.UI.Services.Windows;
 using CodeBase.UI.Windows;
@@ -14,13 +13,11 @@ namespace CodeBase.UI.Services.Factory
         
         private readonly IStaticDataService _staticData;
         private readonly IAssetProvider _assetProvider;
-        private readonly IGameStateMachine _gameStateMachine;
 
-        public UIFactory(IStaticDataService staticData, IAssetProvider assetProvider, IGameStateMachine gameStateMachine)
+        public UIFactory(IStaticDataService staticData, IAssetProvider assetProvider)
         {
             _staticData = staticData;
             _assetProvider = assetProvider;
-            _gameStateMachine = gameStateMachine;
         }
 
         public void CreateUIRoot()
@@ -29,23 +26,16 @@ namespace CodeBase.UI.Services.Factory
             _uiRoot = root.transform;
         }
 
-        public void CreatTroubleWindow() => 
-            InstantiateWindow(WindowID.Trouble);
+        public MainMenuWindow CreateMainMenuWindow() => 
+            InstantiateWindow(WindowID.MainMenu).GetComponent<MainMenuWindow>();
 
-        public void CreateMainMenuWindow() => 
-            InstantiateWindow(WindowID.MainMenu);
-
-        public Level CreatLevelWindow() => 
-             InstantiateWindow(WindowID.Level).GetComponent<Level>();
-
-        public void CreateCompleteWindow() => 
-            InstantiateWindow(WindowID.Complete);
+        public LoadingWindow CreateLoadingWindow() => 
+            InstantiateWindow(WindowID.Loading).GetComponent<LoadingWindow>();
 
         private WindowBase InstantiateWindow(WindowID windowID)
         {
             WindowConfig config = _staticData.ForWindow(windowID);
             WindowBase windowBase = Object.Instantiate(config.Prefab, _uiRoot);
-            windowBase.Construct(_gameStateMachine);
             return windowBase;
         }
         

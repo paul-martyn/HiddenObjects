@@ -5,5 +5,6 @@
         public const string RootCanvasPath = "RootCanvas";
         
         public const string LevelButtonPath = "LevelButton";
+        public const string LevelPath = "Level";
     }
 }
